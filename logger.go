@@ -35,7 +35,7 @@ type LogEntry struct {
 	Data      interface{} `json:"data"`
 }
 
-type logger struct {
+type Logger struct {
 	locker *sync.Mutex
 
 	Tag      string
@@ -43,7 +43,7 @@ type logger struct {
 	fileName string
 }
 
-func (l *logger) Exists() bool {
+func (l *Logger) Exists() bool {
 	if _, err := os.Stat(l.fileName); err == nil {
 		return true
 	}
@@ -51,7 +51,7 @@ func (l *logger) Exists() bool {
 	return false
 }
 
-func (l *logger) Size() (int64, error) {
+func (l *Logger) Size() (int64, error) {
 	if !l.Exists() {
 		return 0, nil
 	}
@@ -63,7 +63,7 @@ func (l *logger) Size() (int64, error) {
 	return size, nil
 }
 
-func (l *logger) write(entry LogEntry) error {
+func (l *Logger) write(entry LogEntry) error {
 
 	entry.Timestamp = time.Now()
 	entry.Tag = l.Tag
@@ -89,19 +89,19 @@ func (l *logger) write(entry LogEntry) error {
 	return nil
 }
 
-func (l *logger) Error(message string, data interface{}) error {
+func (l *Logger) Error(message string, data interface{}) error {
 	return l.write(LogEntry{Level: ErrorLevel, Message: message, Data: data})
 }
 
-func (l *logger) Warning(message string, data interface{}) error {
+func (l *Logger) Warning(message string, data interface{}) error {
 	return l.write(LogEntry{Level: WarningLevel, Message: message, Data: data})
 }
 
-func (l *logger) Info(message string, data interface{}) error {
+func (l *Logger) Info(message string, data interface{}) error {
 	return l.write(LogEntry{Level: InfoLevel, Message: message, Data: data})
 }
 
-func (l *logger) Rotate() error {
+func (l *Logger) Rotate() error {
 
 	if !l.Exists() {
 		return nil
@@ -123,7 +123,7 @@ func (l *logger) Rotate() error {
 	return nil
 }
 
-func New(tag string, path string, rotation Rotation) (*logger, error) {
+func New(tag string, path string, rotation Rotation) (*Logger, error) {
 	if path != "" && path[len(path)-1:] != "/" {
 		path = path + "/"
 	}
@@ -133,7 +133,7 @@ func New(tag string, path string, rotation Rotation) (*logger, error) {
 	}
 
 	now := time.Now()
-	logger := logger{
+	logger := Logger{
 		Tag:      tag,
 		Path:     path,
 		fileName: path + tag + "." + now.Format("20060102") + ".log",
